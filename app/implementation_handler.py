@@ -22,8 +22,10 @@ import tempfile
 import os, sys, shutil
 from importlib import reload
 
+import numpy as np
+from braket.circuits import Circuit, Observable
 from flask_restful import abort
-import cirq
+from braket.ir.jaqcd import Program
 from urllib3 import HTTPResponse
 
 from app import app
@@ -72,18 +74,97 @@ def prepare_code_from_url(url, input_params, bearer_token: str = ""):
     return circuit
 
 
-def prepare_code_from_cirq_json(cirq_json):
-    return cirq.read_json(json_text=cirq_json)
+def prepare_code_from_braket_ir(braket_ir):
+    ir = Program.parse_raw(braket_ir)
+    instructions = ir.instructions
+    circuit = Circuit()
+    # adding of instructions
+    for inst in instructions:
+        # Get instruction by name. This is possible since braket and braket ir use identical names for all gates.
+        instcall = getattr(circuit, f"{inst.type}")
+        args = []
+        kwargs = {}
+        # Special cases for gates that interact with matrices, since they have special target syntax
+        if hasattr(inst, "matrices"):
+            matrices = inst.matrices.copy()
+            reformed_matrices = []
+            for matrix in matrices:
+                for row in matrix:
+                    for i in range(len(row)):
+                        row[i] = np.complex(row[i][0], row[i][1])
+                reformed_matrices.append(np.array(matrix))
+            args.append(inst.targets)
+            kwargs["matrices"] = reformed_matrices
+        elif hasattr(inst, "matrix"):
+            matrix = inst.matrix.copy()
+            for row in matrix:
+                for i in range(len(row)):
+                    row[i] = np.complex(row[i][0], row[i][1])
+            kwargs["matrix"] = np.array(matrix)
+            kwargs["targets"] = inst.targets
+        else:
+            # Adding of parameters to args and kwargs respectively
+            if hasattr(inst, "control"):
+                args.append(inst.control)
+            elif hasattr(inst, "controls"):
+                for control in inst.controls:
+                    args.append(control)
+
+            if hasattr(inst, "target"):
+                args.append(inst.target)
+            elif hasattr(inst, "targets"):
+                for target in inst.targets:
+                    args.append(target)
+
+            if hasattr(inst, "angle"):
+                args.append(inst.angle)
+
+            if hasattr(inst, "probability"):
+                kwargs["probability"] = inst.probability
+
+            if hasattr(inst, "gamma"):
+                kwargs["gamma"] = inst.gamma
+
+        # Calls function using args and kwargs
+        instcall(*args, **kwargs)
+
+    # Get measurement operations from IR
+    results = ir.results
+
+    # Adding of resulttypes
+    for result in results:
+        # Isolated cases for statevector and densitymatrix,
+        # since they don't have matching names in both representations
+        if result.type == "statevector":
+            circuit.state_vector()
+        elif result.type == "densitymatrix":
+            circuit.density_matrix(target=result.targets)
+        else:
+            # Get operation
+            instcall = getattr(circuit, f"{result.type}")
+            kwargs = {}
+            # Adding of parameters to kwargs
+            if hasattr(result, "observable"):
+                obscall = getattr(Observable, f"{(str(result.observable[0])).upper()}")
+                kwargs["observable"] = obscall()
+            if hasattr(result, "states"):
+                kwargs["states"] = result.states
+            if hasattr(result, "targets"):
+                kwargs["target"] = result.targets
+
+            # Calls function with arguments
+            instcall(**kwargs)
+    return circuit
 
 
-def prepare_code_from_cirq_url(url, bearer_token: str = ""):
+def prepare_code_from_braket_ir_url(url, bearer_token: str = ""):
     """Get implementation code from URL. Set input parameters into implementation. Return circuit."""
     try:
         impl = _download_code(url, bearer_token)
     except (error.HTTPError, error.URLError):
         return None
 
-    return prepare_code_from_cirq_json(impl)
+    return prepare_code_from_braket_ir(impl)
 
 
 def _download_code(url: str, bearer_token: str = "") -> str:

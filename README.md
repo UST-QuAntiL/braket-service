@@ -1,6 +1,6 @@
-# cirq-service
+# braket-service
 
-This service takes a Cirq implementation as data or via an URL and returns either compiled circuit properties and the transpiled Quil String (Transpilation Request) or its results (Execution Request) depending on the input data and selected backend.
+This service takes a Braket implementation as data or via an URL and returns either compiled circuit properties and the transpiled Quil String (Transpilation Request) or its results (Execution Request) depending on the input data and selected backend.
 
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -8,7 +8,7 @@ This service takes a Cirq implementation as data or via an URL and returns eithe
 ## Setup
 * Clone repository:
 ```
-git clone https://github.com/KuhnMn/cirq-service.git
+git clone https://github.com/KuhnMn/braket-service.git
 ```
 
 * Start containers:
@@ -17,13 +17,13 @@ docker-compose pull
 docker-compose up
 ```
 
-Now the cirq-service is available on http://localhost:5018/.
+Now the braket-service is available on http://localhost:5018/.
 
 ## After implementation changes
 * Update container:
 ```
-docker build -t kuhnmx/cirq-service:latest
-docker push kuhnmx/cirq-service:latest
+docker build -t kuhnmx/braket-service:latest
+docker push kuhnmx/braket-service:latest
 ```
 
 * Start containers:
@@ -33,17 +33,17 @@ docker-compose up
 ```
 
 ## Transpilation Request
-Send implementation and QPU information to the API to get properties of the transpiled circuit and the transpiled Cirq-JSON circuit itself.
-*Note*: Currently, the Cirq package is used for local simulation. Thus, no real backends are accessible.
+Send implementation and QPU information to the API to get properties of the transpiled circuit and the transpiled Braket-JSON circuit itself.
+*Note*: Currently, the Braket package is used for local simulation. Thus, no real backends are accessible.
 Inputs are currently also not supported.
 
-`POST /cirq-service/api/v1.0/transpile`
+`POST /braket-service/api/v1.0/transpile`
 
 #### Transpilation via data
 ```
 {  
     "impl-data": "BASE64-ENCODED-IMPLEMENTATION",
-    "impl-language": "Cirq",
+    "impl-language": "Braket",
     "qpu-name": "NAME-OF-QPU",
     "input-params": {
     }
@@ -52,27 +52,56 @@ Inputs are currently also not supported.
 
 ## Execution Request
 Send implementation, input, and QPU information to the API to execute your circuit and get the result.
-*Note*: Currently, the Cirq package is used for local simulation. Thus, no real backends are accessible.
+*Note*: Currently, the Braket package is used for local simulation. Thus, no real backends are accessible.
 Inputs are currently also not supported.
 
-`POST /cirq-service/api/v1.0/execute`  
+`POST /braket-service/api/v1.0/execute`  
 
+
+#### Execution via URL
+```
+{  
+    "impl-url": "URL-OF-IMPLEMENTATION",,
+    "impl-language": "Braket/Braket-IR",
+    "qpu-name": "NAME-OF-QPU",
+    "input-params": {
+        "PARAM-NAME-1": {
+                "rawValue": "YOUR-VALUE-1",
+                "type": "Integer"
+            },
+            "PARAM-NAME-2": {
+                "rawValue": "YOUR-VALUE-2",
+                "type": "String"
+            },
+            ...
+    }
+}
+```
 
 #### Execution via data
 ```
 {  
     "impl-data": "BASE64-ENCODED-IMPLEMENTATION",
-    "impl-language": "Cirq",
+    "impl-language": "Braket/Braket-IR",
     "qpu-name": "NAME-OF-QPU",
     "input-params": {
+     "PARAM-NAME-1": {
+                "rawValue": "YOUR-VALUE-1",
+                "type": "Integer"
+            },
+            "PARAM-NAME-2": {
+                "rawValue": "YOUR-VALUE-2",
+                "type": "String"
+            },
+            ...
     }
 }
 ```
-#### Execution via transpiled Cirq-JSON String
-Note that the JSON has to be sent in form of a single string.
+#### Execution via Braket-IR String
+Note that the IRs JSON has to be sent in form of a single string.
 ```
 {  
-    "transpiled-cirq": "TRANSPILED-CIRQ-JSON-STRING",
+    "braket_ir": "BRAKET-IR-STRING",
     "qpu-name": "NAME-OF-QPU"
 }
 ```

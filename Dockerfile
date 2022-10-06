@@ -11,9 +11,9 @@ COPY . /app
 
 EXPOSE 5018/tcp
 
-ENV FLASK_APP=cirq-service.py
+ENV FLASK_APP=braket-service.py
 ENV FLASK_ENV=development
 ENV FLASK_DEBUG=0
 RUN echo "python -m flask db upgrade" > /app/startup.sh
-RUN echo "gunicorn cirq-service:app -b 0.0.0.0:5018 -w 4 --timeout 500 --log-level info" >> /app/startup.sh
+RUN echo "gunicorn braket-service:app -b 0.0.0.0:5018 -w 4 --timeout 500 --log-level info" >> /app/startup.sh
 CMD [ "sh", "/app/startup.sh" ]
