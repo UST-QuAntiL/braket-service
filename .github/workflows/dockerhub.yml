@@ -34,7 +34,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: kuhnmx/cirq-service:latest
+          tags: kuhnmx/braket-service:latest
 
       - name: Build and push version of cirq-service
         if: ${{ steps.vars.outputs.tag != 'main' }}
@@ -42,4 +42,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: kuhnmx/cirq-service:${{ steps.vars.outputs.tag }}
+          tags: kuhnmx/braket-service:${{ steps.vars.outputs.tag }}

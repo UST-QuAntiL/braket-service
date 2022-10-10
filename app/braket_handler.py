@@ -26,11 +26,11 @@ from braket.tasks import QuantumTask
 
 def get_backend(qpu):
     """Get backend."""
-    if qpu.lower() == "local sim":
-        return LocalSimulator()
+    if qpu.lower() == "local-simulator":
+        return LocalSimulator("braket_dm")
     else:
         try:
-            return AwsDevice("qpu")
+            return AwsDevice(qpu)
         except ValueError:
             return None
 
@@ -51,7 +51,8 @@ def execute_job(circuit: Circuit, shots, backend):
     status = task.state()
     while not status == "COMPLETED":
         if status == "FAILED" or status == "CANCELLED":
-            raise RuntimeError("The execution failed or was cancelled.")
+            print("The execution failed or was cancelled.")
+            return None
         print("The task is still running")
         status = task.state()
     result = task.result()

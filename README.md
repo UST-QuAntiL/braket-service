@@ -43,17 +43,27 @@ Inputs are currently also not supported.
 ```
 {  
     "impl-data": "BASE64-ENCODED-IMPLEMENTATION",
-    "impl-language": "Braket",
+    "impl-language": "Braket/Braket-IR",
     "qpu-name": "NAME-OF-QPU",
     "input-params": {
+        "PARAM-NAME-1": {
+                "rawValue": "YOUR-VALUE-1",
+                "type": "Integer"
+            },
+            "PARAM-NAME-2": {
+                "rawValue": "YOUR-VALUE-2",
+                "type": "String"
+            },
+            ...
     }
 }
 ```
 
 ## Execution Request
 Send implementation, input, and QPU information to the API to execute your circuit and get the result.
-*Note*: Currently, the Braket package is used for local simulation. Thus, no real backends are accessible.
-Inputs are currently also not supported.
+*Note*: Currently, the Braket package is used for local simulation including noise.
+Integration with Amazon AWS to support real backends is not yet implemented.
+Inputs are also only supported for code inputs.
 
 `POST /braket-service/api/v1.0/execute`  
 
@@ -63,7 +73,7 @@ Inputs are currently also not supported.
 {  
     "impl-url": "URL-OF-IMPLEMENTATION",,
     "impl-language": "Braket/Braket-IR",
-    "qpu-name": "NAME-OF-QPU",
+    "qpu-name": "ARN-OF-QPU/local-simulator",
     "input-params": {
         "PARAM-NAME-1": {
                 "rawValue": "YOUR-VALUE-1",
@@ -83,7 +93,7 @@ Inputs are currently also not supported.
 {  
     "impl-data": "BASE64-ENCODED-IMPLEMENTATION",
     "impl-language": "Braket/Braket-IR",
-    "qpu-name": "NAME-OF-QPU",
+    "qpu-name": "ARN-OF-QPU/local-simulator",
     "input-params": {
      "PARAM-NAME-1": {
                 "rawValue": "YOUR-VALUE-1",
