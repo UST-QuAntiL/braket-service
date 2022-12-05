@@ -30,12 +30,7 @@ def execute(impl_url, impl_data, impl_language, input_params, braket_ir, token, 
     """Create database entry for result. Get implementation code, prepare it, and execute it. Save result in db"""
     job = get_current_job()
 
-    backend = braket_handler.get_backend(qpu_name)
-    if not backend:
-        result = Result.query.get(job.get_id())
-        result.result = json.dumps({'error': 'qpu-name wrong or error with aws'})
-        result.complete = True
-        db.session.commit()
+
 
     logging.info('Preparing implementation...')
     circuit = None
@@ -67,7 +62,7 @@ def execute(impl_url, impl_data, impl_language, input_params, braket_ir, token, 
     transpiled_circuit = circuit
 
     logging.info('Start executing...')
-    job_result = braket_handler.execute_job(transpiled_circuit, shots, backend)
+    job_result = braket_handler.execute_job(transpiled_circuit, shots, qpu_name)
     if job_result:
         result = Result.query.get(job.get_id())
         result.result = json.dumps(job_result)

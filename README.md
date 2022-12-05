@@ -8,7 +8,7 @@ This service takes a Braket implementation as data or via an URL and returns eit
 ## Setup
 * Clone repository:
 ```
-git clone https://github.com/KuhnMn/braket-service.git
+git clone https://github.com/UST-QuAntiL/braket-service.git
 ```
 
 * Start containers:
@@ -22,8 +22,8 @@ Now the braket-service is available on http://localhost:5018/.
 ## After implementation changes
 * Update container:
 ```
-docker build -t kuhnmx/braket-service:latest
-docker push kuhnmx/braket-service:latest
+docker build -t planqk/braket-service:latest
+docker push planqk/braket-service:latest
 ```
 
 * Start containers:
@@ -90,7 +90,7 @@ Note that the IRs JSON has to be sent in form of a single string.
 ```
 {  
     "braket_ir": "BRAKET-IR-STRING",
-    "qpu-name": "NAME-OF-QPU",
+    "qpu-name": "ARN-OF-QPU/local-simulator",
     "shots": "SHOTS"
 }
 ```

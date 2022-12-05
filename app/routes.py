@@ -19,7 +19,7 @@
 
 from app import app, braket_handler, implementation_handler, db, parameters
 from app.result_model import Result
-from flask import jsonify, abort, request
+from flask import jsonify, abort, request, Response
 import logging
 import json
 import base64
@@ -32,7 +32,7 @@ def transpile_circuit():
     and return depth and width."""
 
     # braket does not support compilation of circuits before execution
-    abort(404)
+    abort(Response("The Braket Service does not support transpilation", 404))
 
 
 @app.route('/braket-service/api/v1.0/execute', methods=['POST'])

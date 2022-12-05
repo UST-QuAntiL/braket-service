@@ -2,9 +2,12 @@ FROM python:3.7-slim
 
 MAINTAINER Marie Salm "marie.salm@iaas.uni-stuttgart.de"
 
+RUN apt-get update
+RUN apt-get install curl -y
+RUN apt-get install unzip -y
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 RUN unzip awscliv2.zip
-RUN sudo ./aws/install
+RUN ./aws/install
 
 COPY ./requirements.txt /app/requirements.txt
 WORKDIR /app

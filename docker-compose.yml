@@ -12,7 +12,7 @@ services:
     networks:
       - default
   braket-service:
-    image: kuhnmx/braket-service:latest
+    image: planqk/braket-service:latest
     command: sh /app/startup.sh
     ports:
       - "5019:5019"
@@ -25,7 +25,7 @@ services:
       - default
 
   rq-worker:
-    image: kuhnmx/braket-service:latest
+    image: planqk/braket-service:latest
     command: rq worker --url redis://redis:5040 braket-service_execute
     environment:
       - REDIS_URL=redis://redis:5040
