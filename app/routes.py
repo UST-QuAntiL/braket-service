@@ -51,6 +51,7 @@ def execute_circuit():
     shots = request.json.get('shots', 1024)
     if 'token' in input_params:
         token = input_params['token']
+        input_params = {}
     elif 'token' in request.json:
         token = request.json.get('token')
     else:
@@ -74,7 +75,7 @@ def execute_circuit():
 @app.route('/braket-service/api/v1.0/calculate-calibration-matrix', methods=['POST'])
 def calculate_calibration_matrix():
     """Put calibration matrix calculation job in queue. Return location of the later result."""
-    pass
+    abort(404)
 
 
 @app.route('/braket-service/api/v1.0/results/<result_id>', methods=['GET'])

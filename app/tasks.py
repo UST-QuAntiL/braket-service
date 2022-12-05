@@ -41,6 +41,8 @@ def execute(impl_url, impl_data, impl_language, input_params, braket_ir, token, 
     circuit = None
     if braket_ir:
         circuit = implementation_handler.prepare_code_from_braket_ir(braket_ir)
+        if len(input_params) > 0:
+            circuit.make_bound_circuit(input_params)
     else:
         if impl_url:
             if impl_language.lower() == 'braket-ir':

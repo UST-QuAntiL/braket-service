@@ -13,3 +13,5 @@ numpy~=1.19.0
 gunicorn
 amazon-braket-sdk
 markupsafe==2.0.1
+boto3
+botocore

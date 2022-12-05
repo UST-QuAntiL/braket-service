@@ -33,31 +33,7 @@ docker-compose up
 ```
 
 ## Transpilation Request
-Send implementation and QPU information to the API to get properties of the transpiled circuit and the transpiled Braket-JSON circuit itself.
-*Note*: Currently, the Braket package is used for local simulation. Thus, no real backends are accessible.
-Inputs are currently also not supported.
-
-`POST /braket-service/api/v1.0/transpile`
-
-#### Transpilation via data
-```
-{  
-    "impl-data": "BASE64-ENCODED-IMPLEMENTATION",
-    "impl-language": "Braket/Braket-IR",
-    "qpu-name": "NAME-OF-QPU",
-    "input-params": {
-        "PARAM-NAME-1": {
-                "rawValue": "YOUR-VALUE-1",
-                "type": "Integer"
-            },
-            "PARAM-NAME-2": {
-                "rawValue": "YOUR-VALUE-2",
-                "type": "String"
-            },
-            ...
-    }
-}
-```
+Braket does not support transpilation prior to execution, so transpilation is not supported by this service.
 
 ## Execution Request
 Send implementation, input, and QPU information to the API to execute your circuit and get the result.
@@ -71,9 +47,10 @@ Inputs are also only supported for code inputs.
 #### Execution via URL
 ```
 {  
-    "impl-url": "URL-OF-IMPLEMENTATION",,
+    "impl-url": "URL-OF-IMPLEMENTATION",
     "impl-language": "Braket/Braket-IR",
     "qpu-name": "ARN-OF-QPU/local-simulator",
+    "shots": "SHOTS",
     "input-params": {
         "PARAM-NAME-1": {
                 "rawValue": "YOUR-VALUE-1",
@@ -94,6 +71,7 @@ Inputs are also only supported for code inputs.
     "impl-data": "BASE64-ENCODED-IMPLEMENTATION",
     "impl-language": "Braket/Braket-IR",
     "qpu-name": "ARN-OF-QPU/local-simulator",
+    "shots": "SHOTS",
     "input-params": {
      "PARAM-NAME-1": {
                 "rawValue": "YOUR-VALUE-1",
@@ -112,7 +90,8 @@ Note that the IRs JSON has to be sent in form of a single string.
 ```
 {  
     "braket_ir": "BRAKET-IR-STRING",
-    "qpu-name": "NAME-OF-QPU"
+    "qpu-name": "NAME-OF-QPU",
+    "shots": "SHOTS"
 }
 ```
 
