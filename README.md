@@ -98,7 +98,7 @@ Note that the IRs JSON has to be sent in form of a single string.
 Returns a content location for the result. Access it via `GET`.
 
 ## Sample Implementations for Transpilation and Execution
-Sample implementations can be found [here](https://github.com/UST-QuAntiL/nisq-analyzer-content/tree/master/compiler-selection/Shor) and under the folder 'Sample Implementations'.
+Sample implementations can be found [here](https://github.com/UST-QuAntiL/braket-service/tree/main/Sample%20Implementations).
 Please use the raw GitHub URL as `impl-url` value (see [example](https://raw.githubusercontent.com/UST-QuAntiL/nisq-analyzer-content/master/compiler-selection/Shor/shor-fix-15-quil.quil)).
 
 ## Haftungsausschluss
