@@ -3,6 +3,7 @@ Flask==1.1.4
 Flask-Migrate==2.5.3
 Flask-RESTful==0.3.8
 Flask-SQLAlchemy==2.4.1
+flask-smorest
 redis==3.5.2
 requests==2.23.0
 rq==1.8.1
@@ -15,3 +16,4 @@ amazon-braket-sdk
 markupsafe==2.0.1
 boto3
 botocore
+marshmallow==3.13.0

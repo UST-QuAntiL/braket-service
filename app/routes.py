@@ -18,12 +18,23 @@
 # ******************************************************************************
 
 from app import app, braket_handler, implementation_handler, db, parameters
+from app.request_schemas import ExecutionRequestSchema, ExecutionRequest
+from app.response_schemas import ExecutionResponseSchema, ExecutionResponse, ResultResponseSchema, ResultResponse
 from app.result_model import Result
 from flask import jsonify, abort, request, Response
 import logging
 import json
+from flask_smorest import Blueprint
 import base64
 import traceback
+
+
+blp = Blueprint(
+    "routes",
+    __name__,
+    url_prefix="/braket-service/api/v1.0/",
+    description="All Braket-Service endpoints",
+)
 
 
 @app.route('/braket-service/api/v1.0/transpile', methods=['POST'])
@@ -35,25 +46,42 @@ def transpile_circuit():
     abort(Response("The Braket Service does not support transpilation", 404))
 
 
-@app.route('/braket-service/api/v1.0/execute', methods=['POST'])
-def execute_circuit():
+@blp.route("/execute", methods=["POST"])
+@blp.arguments(
+    ExecutionRequestSchema,
+    example={
+    "impl_url": "https://raw.githubusercontent.com/UST-QuAntiL/braket-service/main/Sample%20Implementations/circuit_braket.py",
+    "impl_language": "Braket",
+    "qpu_name": "local-simulator",
+    "shots": 1024,
+    "input_params": {
+        "param1": {
+                "rawValue": "2",
+                "type": "Integer"
+                }
+        }
+    }
+)
+@blp.response(202, ExecutionResponseSchema)
+def execute_circuit(json: ExecutionRequest):
     """Put execution job in queue. Return location of the later result."""
-    if not request.json or not 'qpu-name' in request.json:
+    if not json or not json.get('qpu_name'):
         abort(400)
-    qpu_name = request.json['qpu-name']
-    impl_language = request.json.get('impl-language', '')
-    impl_url = request.json.get('impl-url')
-    bearer_token = request.json.get("bearer-token", "")
-    impl_data = request.json.get('impl-data')
-    braket_ir = request.json.get('braket_ir', "")
-    input_params = request.json.get('input-params', "")
-    input_params = parameters.ParameterDictionary(input_params)
-    shots = request.json.get('shots', 1024)
+    qpu_name = json.get('qpu_name')
+    impl_language = json.get('impl_language', '')
+    impl_url = json.get('impl_url')
+    bearer_token = json.get("bearer_token", "")
+    impl_data = json.get('impl_data')
+    braket_ir = json.get('braket_ir', "")
+    input_params = json.get('input_params', "")
+    if input_params != "":
+        input_params = parameters.ParameterDictionary(input_params)
+    shots = json.get('shots', 1024)
     if 'token' in input_params:
         token = input_params['token']
         input_params = {}
-    elif 'token' in request.json:
-        token = request.json.get('token')
+    elif json.get('token'):
+        token = json.get('token')
     else:
         token = ""
 
@@ -66,9 +94,9 @@ def execute_circuit():
 
     logging.info('Returning HTTP response to client...')
     content_location = '/braket-service/api/v1.0/results/' + result.id
-    response = jsonify({'Location': content_location})
+    response = ExecutionResponse(content_location)
     response.status_code = 202
-    response.headers['Location'] = content_location
+    response.headers.set('Location', content_location)
     return response
 
 
@@ -78,20 +106,23 @@ def calculate_calibration_matrix():
     abort(404)
 
 
-@app.route('/braket-service/api/v1.0/results/<result_id>', methods=['GET'])
+@blp.route("/results/<string:result_id>", methods=["GET"])
+@blp.response(200, ResultResponseSchema)
 def get_result(result_id):
     """Return result when it is available."""
-    result = Result.query.get(result_id)
+    result = Result.query.get(str(result_id).strip())
     if result.complete:
         result_histogram = json.loads(result.result)
-        return jsonify({'id': result.id, 'complete': result.complete, 'result': result_histogram,
-                        'backend': result.backend, 'shots': result.shots}), 200
+        response = ResultResponse(result.id, result.complete, result_histogram, result.backend, result.shots)
     else:
-        return jsonify({'id': result.id, 'complete': result.complete}), 200
+        response = ResultResponse(result.id, result.complete)
+    return response
 
 
-@app.route('/braket-service/api/v1.0/version', methods=['GET'])
+@blp.route("/version", methods=["GET"])
+@blp.response(200)
 def version():
+    """Return current version number."""
     return jsonify({'version': '1.0'})
 
 

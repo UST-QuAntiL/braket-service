@@ -50,14 +50,14 @@ Inputs are also only supported for code inputs.
     "impl-url": "URL-OF-IMPLEMENTATION",
     "impl-language": "Braket/Braket-IR",
     "qpu-name": "ARN-OF-QPU/local-simulator",
-    "shots": "SHOTS",
+    "shots": SHOTS,
     "input-params": {
         "PARAM-NAME-1": {
-                "rawValue": "YOUR-VALUE-1",
+                "rawValue": YOUR-VALUE-1,
                 "type": "Integer"
             },
             "PARAM-NAME-2": {
-                "rawValue": "YOUR-VALUE-2",
+                "rawValue": YOUR-VALUE-2,
                 "type": "String"
             },
             ...
@@ -71,14 +71,14 @@ Inputs are also only supported for code inputs.
     "impl-data": "BASE64-ENCODED-IMPLEMENTATION",
     "impl-language": "Braket/Braket-IR",
     "qpu-name": "ARN-OF-QPU/local-simulator",
-    "shots": "SHOTS",
+    "shots": SHOTS,
     "input-params": {
-     "PARAM-NAME-1": {
-                "rawValue": "YOUR-VALUE-1",
+    "PARAM-NAME-1": {
+                "rawValue": YOUR-VALUE-1,
                 "type": "Integer"
             },
             "PARAM-NAME-2": {
-                "rawValue": "YOUR-VALUE-2",
+                "rawValue": YOUR-VALUE-2,
                 "type": "String"
             },
             ...
@@ -91,7 +91,7 @@ Note that the IRs JSON has to be sent in form of a single string.
 {  
     "braket_ir": "BRAKET-IR-STRING",
     "qpu-name": "ARN-OF-QPU/local-simulator",
-    "shots": "SHOTS"
+    "shots": SHOTS
 }
 ```
 
