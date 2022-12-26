@@ -50,11 +50,11 @@ def transpile_circuit():
 @blp.arguments(
     ExecutionRequestSchema,
     example={
-    "impl_url": "https://raw.githubusercontent.com/UST-QuAntiL/braket-service/main/Sample%20Implementations/circuit_braket.py",
-    "impl_language": "Braket",
-    "qpu_name": "local-simulator",
+    "impl-url": "https://raw.githubusercontent.com/UST-QuAntiL/braket-service/main/Sample%20Implementations/circuit_braket.py",
+    "impl-language": "Braket",
+    "qpu-name": "local-simulator",
     "shots": 1024,
-    "input_params": {
+    "input-params": {
         "param1": {
                 "rawValue": "2",
                 "type": "Integer"

@@ -1,6 +1,4 @@
 import marshmallow as ma
-from marshmallow import pre_load, ValidationError
-import numpy as np
 
 
 class ExecutionRequest:
@@ -21,14 +19,14 @@ class ResultRequest:
 
 
 class ExecutionRequestSchema(ma.Schema):
-    qpu_name = ma.fields.String()
-    impl_language = ma.fields.String()
-    impl_url = ma.fields.String()
-    impl_data = ma.fields.String()
+    qpu_name = ma.fields.String(data_key="qpu-name")
+    impl_language = ma.fields.String(data_key="impl-language")
+    impl_url = ma.fields.String(data_key="impl-url")
+    impl_data = ma.fields.String(data_key="impl-data")
     transpiled_cirq_json = ma.fields.String()
-    bearer_token = ma.fields.String()
+    bearer_token = ma.fields.String(data_key="bearer-token")
     shots = ma.fields.Integer()
-    input_params = ma.fields.Mapping()
+    input_params = ma.fields.Mapping(data_key="input-params")
 
 
 class ResultRequestSchema(ma.Schema):
