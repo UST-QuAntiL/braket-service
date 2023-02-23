@@ -89,7 +89,7 @@ Inputs are also only supported for code inputs.
 Note that the IRs JSON has to be sent in form of a single string.
 ```
 {  
-    "braket_ir": "BRAKET-IR-STRING",
+    "braket-ir": "BRAKET-IR-STRING",
     "qpu-name": "ARN-OF-QPU/local-simulator",
     "shots": SHOTS
 }

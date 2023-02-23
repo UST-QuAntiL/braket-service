@@ -55,6 +55,8 @@ def prepare_code_from_data(data, input_params):
             circuit = downloaded_code.qc
         elif 'p' in dir(downloaded_code):
             circuit = downloaded_code.p
+        elif 'c' in dir(downloaded_code):
+            circuit = downloaded_code.c
     finally:
         sys.path.remove(temp_dir)
         shutil.rmtree(temp_dir, ignore_errors=True)

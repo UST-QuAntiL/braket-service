@@ -61,6 +61,7 @@ def execute(impl_url, impl_data, impl_language, input_params, braket_ir, token, 
 
     transpiled_circuit = circuit
 
+
     logging.info('Start executing...')
     job_result = braket_handler.execute_job(transpiled_circuit, shots, qpu_name)
     if job_result:

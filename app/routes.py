@@ -16,10 +16,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 # ******************************************************************************
+import braket.circuits
 
 from app import app, braket_handler, implementation_handler, db, parameters
-from app.request_schemas import ExecutionRequestSchema, ExecutionRequest
-from app.response_schemas import ExecutionResponseSchema, ExecutionResponse, ResultResponseSchema, ResultResponse
+from app.request_schemas import ExecutionRequestSchema, ExecutionRequest, TranspilationRequestSchema, \
+    TranspilationRequest
+from app.response_schemas import ExecutionResponseSchema, ExecutionResponse, ResultResponseSchema, ResultResponse, \
+    TranspilationResponseSchema, TranspilationResponse
 from app.result_model import Result
 from flask import jsonify, abort, request, Response
 import logging
@@ -37,13 +40,124 @@ blp = Blueprint(
 )
 
 
-@app.route('/braket-service/api/v1.0/transpile', methods=['POST'])
-def transpile_circuit():
+@blp.route("/transpile", methods=["POST"])
+@blp.arguments(
+    TranspilationRequestSchema,
+    example={
+        "impl-url": "https://raw.githubusercontent.com/UST-QuAntiL/braket-service/main/Sample%20Implementations/circuit_braket_ir.json",
+        "impl-language": "Braket-IR"
+    }
+)
+@blp.response(200, TranspilationResponseSchema)
+def transpile_circuit(json: TranspilationRequest):
     """Get implementation from URL. Pass input into implementation. Generate and transpile circuit
     and return depth and width."""
+    if not json:
+        abort(400)
+    qpu_name = json.get('qpu_name', "")
+    impl_language = json.get('impl_language', '')
+    input_params = json.get('input_params', "")
+    impl_url = json.get('impl_url', "")
+    impl_data = json.get('impl_data', "")
+    bearer_token = json.get("bearer_token", "")
+    app.logger.info("The input params are:" + str(input_params))
+    if input_params != "":
+        input_params = parameters.ParameterDictionary(input_params)
+    # adapt if real backends are available
+    token = ''
+    # if 'token' in input_params:
+    #     token = input_params['token']
+    # elif 'token' in request.json:
+    #     token = request.json.get('token')
+    # else:
+    #     abort(400)
 
-    # braket does not support compilation of circuits before execution
-    abort(Response("The Braket Service does not support transpilation", 404))
+    if impl_url:
+        if impl_language.lower() == 'braket-ir':
+            short_impl_name = 'no name'
+            circuit = implementation_handler.prepare_code_from_braket_ir_url(impl_url, bearer_token)
+        else:
+            short_impl_name = "untitled"
+            try:
+                circuit = implementation_handler.prepare_code_from_url(impl_url, input_params, bearer_token)
+            except ValueError:
+                abort(400)
+
+    elif impl_data:
+        # Add padding is added for decoding
+        app.logger.info(impl_data)
+        impl_data = base64.b64decode(impl_data.encode() + b'=' * (-len(impl_data) % 4)).decode()
+
+        short_impl_name = 'no short name'
+        if impl_language.lower() == 'braket-ir':
+            circuit = implementation_handler.prepare_code_from_braket_ir(impl_data)
+        else:
+            try:
+                circuit = implementation_handler.prepare_code_from_data(impl_data, input_params)
+            except ValueError:
+                abort(400)
+    else:
+        abort(400)
+
+
+
+    try:
+        # transpile circuit (currently only local sim is supported, so no transpilation is done)
+
+        if not qpu_name.lower == "local-simulator":
+            # TODO: Do actual transpilation if ever possible
+            pass
+
+        # count number of gates and multi qubit gates by iterating over all operations
+        number_of_multi_qubit_gates = 0
+
+        total_number_of_gates = 0
+        for instruction in circuit.instructions:
+            if issubclass(type(instruction.operator), braket.circuits.gate.Gate):
+                total_number_of_gates += 1
+                if len(instruction.target) > 1:
+                    number_of_multi_qubit_gates += 1
+
+        # width: the amount of qubits
+        width = len(circuit.qubits)
+
+        # gate_depth: the longest subsequence of compiled instructions where adjacent instructions share resources
+        depth = circuit.depth
+
+        # multi_qubit_gate_depth not available in braket
+        multi_qubit_gate_depth = -1
+
+        # count number of single qubit gates
+        number_of_single_qubit_gates = total_number_of_gates - number_of_multi_qubit_gates
+
+        # in braket measurement operations are saved separately from gates as result types
+        number_of_measurement_operations = len(circuit.result_types)
+
+        # count total number of all operations including gates and measurement operations
+        total_number_of_operations = total_number_of_gates + number_of_measurement_operations
+    except NotImplementedError:
+        app.logger.info(f"QPU {qpu_name} is not supported!")
+        abort(400)
+    except Exception:
+        app.logger.info(f"Transpile {short_impl_name} for {qpu_name}.")
+        app.logger.info(traceback.format_exc())
+        return jsonify({'error': 'transpilation failed'}), 200
+
+    app.logger.info(f"Transpile {short_impl_name} for {qpu_name}: "
+                    f"w={width}, "
+                    f"d={depth}, "
+                    f"total number of operations={total_number_of_operations}, "
+                    f"number of single qubit gates={number_of_single_qubit_gates}, "
+                    f"number of multi qubit gates={number_of_multi_qubit_gates}, "
+                    f"number of measurement operations={number_of_measurement_operations}, "
+                    f"multi qubit gate depth={multi_qubit_gate_depth}")
+
+    return TranspilationResponse(depth, multi_qubit_gate_depth, width, total_number_of_operations,
+                                number_of_single_qubit_gates, number_of_multi_qubit_gates,
+                                number_of_measurement_operations, circuit.to_ir().json(indent=4))
+
+
+
 
 
 @blp.route("/execute", methods=["POST"])
@@ -84,6 +198,8 @@ def execute_circuit(json: ExecutionRequest):
         token = json.get('token')
     else:
         token = ""
+
+    app.logger.info(f"ir {braket_ir}")
 
     job = app.execute_queue.enqueue('app.tasks.execute', impl_url=impl_url, impl_data=impl_data,
                                     impl_language=impl_language, braket_ir=braket_ir, qpu_name=qpu_name,
