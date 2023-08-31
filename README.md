@@ -1,6 +1,7 @@
 # braket-service
 
-This service takes a Braket implementation as data or via an URL and returns either compiled circuit properties and the transpiled Quil String (Transpilation Request) or its results (Execution Request) depending on the input data and selected backend.
+This service takes a Braket implementation as data or via an URL and returns its results (Execution Request) depending on the input data and selected backend. 
+**Note** that AWS Braket does not support the transpilation prior to execution.
 
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -97,7 +98,7 @@ Note that the IRs JSON has to be sent in form of a single string.
 
 Returns a content location for the result. Access it via `GET`.
 
-## Sample Implementations for Transpilation and Execution
+## Sample Implementations for Execution
 Sample implementations can be found [here](https://github.com/UST-QuAntiL/braket-service/tree/main/Sample%20Implementations).
 Please use the raw GitHub URL as `impl-url` value (see [example](https://raw.githubusercontent.com/UST-QuAntiL/nisq-analyzer-content/master/compiler-selection/Shor/shor-fix-15-quil.quil)).
 
